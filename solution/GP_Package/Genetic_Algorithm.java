@@ -89,7 +89,7 @@ public class Genetic_Algorithm {
 			if(Math.random() < M_Rate) {
 				if (c1.isEmpty())
 					c1.append(newPop.get(i - 1));
-				Mutation(c1.isEmpty() ? c1.append(newPop.get(i - 1)) : c1);
+				Mutation(c1);
 			}
 
 			if(Math.random()< M_Rate) {
