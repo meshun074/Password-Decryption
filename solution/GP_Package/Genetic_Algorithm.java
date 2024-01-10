@@ -6,13 +6,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
-import java.util.Set;
-import java.util.TreeSet;
+//import java.util.Set;
+//import java.util.TreeSet;
 
 public class Genetic_Algorithm {
 	private List<Chromosome> Population = new ArrayList<>();
 	private List<String> newPopulation;
-	private Set<Integer> mask;
+//	private Set<Integer> mask;
 	private final int popSize;
 	private final float crossoverRate;
 	private final float mutationRate;
@@ -27,7 +27,7 @@ public class Genetic_Algorithm {
 		this.crossoverRate = crossoverRate;
 		this.mutationRate = mutationRate;
 		this.Gen = Gen;
-		file = new File (System.getProperty("user.dir") +"\\src\\"+filename);
+		file = new File (System.getProperty("user.dir") +"\\solution\\"+filename);
 		}
 	public void start_GA()
 	{
@@ -39,7 +39,7 @@ public class Genetic_Algorithm {
 		Initial_Population pop = new Initial_Population(popSize, Integer.parseInt(text.substring(0,2)));
 		Population = pop.generate();
 		//remove the chromosome length from the encrypted text
-		text = getData(file).substring(2);
+		text = text.substring(2);
 		// start generation
 		for (int i = 0; i < Gen; i++) {
 			newPopulation = new ArrayList<>();
@@ -47,8 +47,9 @@ public class Genetic_Algorithm {
             for (Chromosome chromosome : Population) {
                 chromosome.setFitness(Evaluation.fitness(chromosome.getValue(), text));
             }
+			Population = new ArrayList<>(sortPop(Population));
 			// output current best chromosome
-			System.out.println(sortPop(Population).get(0).getValue()+" Generation "+i+" "+sortPop(Population).get(0).getFitness());
+			System.out.println(Population.get(0).getValue()+" Generation "+i+" "+Population.get(0).getFitness());
 			//implement elitism
 			newPopulation.addAll(elitismPop(Population));
 			//Tournament Selection
@@ -67,30 +68,41 @@ public class Genetic_Algorithm {
 	
 	// Uniform Crossover
 	private void uniformCrossoverMutation(List<String> newPop, float CO_Rate, float M_Rate) {
-		// TODO Auto-generated method stub
-		mask = generateMask(newPop.get(0).length());
-
+		double rand;
 		int i = 1;
 		while(i < newPop.size())
 		{
+			StringBuilder c1 = new StringBuilder();
+			StringBuilder c2 = new StringBuilder();
 //			Crossover rate
-			if(i< newPop.size() *0.99*CO_Rate)
+			if(Math.random()<CO_Rate)
+//			if(i< newPop.size() *0.99*CO_Rate)
 			{
-				StringBuilder c1 = new StringBuilder();
-				StringBuilder c2 = new StringBuilder();
 				for (int c = 0; c < newPop.get(0).length(); c++) {
-					c1.append(mask.contains(c) ? newPop.get(i).charAt(c) : newPop.get(i - 1).charAt(c));
-					c2.append(mask.contains(c) ? newPop.get(i - 1).charAt(c) : newPop.get(i).charAt(c));
+					rand = Math.random();
+					c1.append(rand<0.5 ? newPop.get(i).charAt(c) : newPop.get(i - 1).charAt(c));
+					c2.append(rand<0.5 ? newPop.get(i - 1).charAt(c) : newPop.get(i).charAt(c));
 				}
 
-				//mutationRate
-				if(i< newPop.size() *0.99*M_Rate) {
-					c1.setCharAt(r.nextInt(c1.length()), getRandomChar());
-					c2.setCharAt(r.nextInt(c2.length()), getRandomChar());
-				}
-				newPop.set(i - 1, String.valueOf(c1));
-				newPop.set(i, String.valueOf(c2));
 			}
+			//mutationRate
+			if(Math.random() < M_Rate) {
+				if (c1.isEmpty())
+					c1.append(newPop.get(i - 1));
+				Mutation(c1.isEmpty() ? c1.append(newPop.get(i - 1)) : c1);
+			}
+
+			if(Math.random()< M_Rate) {
+                if (c2.isEmpty()) {
+                    c2.append(newPop.get(i));
+                }
+                Mutation(c2);
+			}
+
+			if(!c1.isEmpty())
+				newPop.set(i - 1, String.valueOf(c1));
+			if(!c2.isEmpty())
+				newPop.set(i, String.valueOf(c2));
 
 			newPopulation.add(newPop.get(i-1));
 			if(Population.size()==newPopulation.size())
@@ -102,6 +114,13 @@ public class Genetic_Algorithm {
 		}
 	}
 
+	//Perform mutation by changing 2 random character
+	private void Mutation(StringBuilder c) {
+		int num= r.nextInt(1,3);
+		for(int i = 0; i<num; i++)
+			c.setCharAt(r.nextInt(c.length()), getRandomChar());
+	}
+
 	// generate random character for mutation
 	private char getRandomChar()
 	{
@@ -110,17 +129,17 @@ public class Genetic_Algorithm {
 	}
 	
 	//Generate mask for crossover
-	private Set<Integer> generateMask(int length)
-	{
-		int masklength = r.nextInt(length/4, (length/2));
-		mask = new TreeSet<>();
-		
-		while(masklength != mask.size())
-		{
-			mask.add(r.nextInt(length));
-		}
-		return mask;
-	}
+//	private Set<Integer> generateMask(int length)
+//	{
+//		int masklength = r.nextInt(length/4, (length/2));
+//		mask = new TreeSet<>();
+//
+//		while(masklength != mask.size())
+//		{
+//			mask.add(r.nextInt(length));
+//		}
+//		return mask;
+//	}
 	//returns the text in a file
 	private String getData(File file)
 	{
@@ -131,7 +150,6 @@ public class Genetic_Algorithm {
 				text.append(sc.nextLine());
 			}
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			System.out.println("file not found");
 		}
 		return text.toString();
@@ -140,12 +158,11 @@ public class Genetic_Algorithm {
 
 	//sort and return 1% of the best chromosome as string
 	private  ArrayList<String> elitismPop( List<Chromosome> population2){
-		List< Chromosome> list = new ArrayList<>(sortPop(population2));
 		
 		int rate = (int) (population2.size()*0.01);
 		int counter = 0;
 		ArrayList<String> elitismPopulation = new ArrayList<>();
-		for(Chromosome x: list)
+		for(Chromosome x: population2)
 		{
 			elitismPopulation.add(x.getValue());
 			counter++;
@@ -159,7 +176,6 @@ public class Genetic_Algorithm {
 	private List<Chromosome> sortPop(List<Chromosome> popu){
 		List< Chromosome> list = new ArrayList<>(popu);
 		list.sort((o1, o2) -> {
-            // TODO Auto-generated method stub
             if (o1.getFitness() == o2.getFitness())
                 return 0;
 
