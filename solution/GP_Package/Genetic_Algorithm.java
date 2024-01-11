@@ -69,48 +69,55 @@ public class Genetic_Algorithm {
 	// Uniform Crossover
 	private void uniformCrossoverMutation(List<String> newPop, float CO_Rate, float M_Rate) {
 		double rand;
-		int i = 1;
-		while(i < newPop.size())
+		int i2 = 1;
+		int i1;
+		while(i2 < newPop.size())
 		{
+			i1=i2-1;
+			//ensures same parents are not used for crossover
+			while (newPop.get(i1).equals(newPop.get(i2)))
+				i1=r.nextInt(newPop.size());
+
 			StringBuilder c1 = new StringBuilder();
 			StringBuilder c2 = new StringBuilder();
 //			Crossover rate
-			if(Math.random()<CO_Rate)
+			if (Math.random() < CO_Rate)
 //			if(i< newPop.size() *0.99*CO_Rate)
 			{
 				for (int c = 0; c < newPop.get(0).length(); c++) {
 					rand = Math.random();
-					c1.append(rand<0.5 ? newPop.get(i).charAt(c) : newPop.get(i - 1).charAt(c));
-					c2.append(rand<0.5 ? newPop.get(i - 1).charAt(c) : newPop.get(i).charAt(c));
+					c1.append(rand < 0.5 ? newPop.get(i2).charAt(c) : newPop.get(i1).charAt(c));
+					c2.append(rand < 0.5 ? newPop.get(i1).charAt(c) : newPop.get(i2).charAt(c));
 				}
 
 			}
 			//mutationRate
-			if(Math.random() < M_Rate) {
+			if (Math.random() < M_Rate) {
 				if (c1.isEmpty())
-					c1.append(newPop.get(i - 1));
+					c1.append(newPop.get(i1));
 				Mutation(c1);
 			}
 
-			if(Math.random()< M_Rate) {
-                if (c2.isEmpty()) {
-                    c2.append(newPop.get(i));
-                }
-                Mutation(c2);
+			if (Math.random() < M_Rate) {
+				if (c2.isEmpty()) {
+					c2.append(newPop.get(i2));
+				}
+				Mutation(c2);
 			}
 
-			if(!c1.isEmpty())
-				newPop.set(i - 1, String.valueOf(c1));
-			if(!c2.isEmpty())
-				newPop.set(i, String.valueOf(c2));
+			if (!c1.isEmpty())
+				newPop.set(i1, String.valueOf(c1));
+			if (!c2.isEmpty())
+				newPop.set(i2, String.valueOf(c2));
 
-			newPopulation.add(newPop.get(i-1));
-			if(Population.size()==newPopulation.size())
+			newPopulation.add(newPop.get(i1));
+			if (Population.size() == newPopulation.size())
 				break;
-			newPopulation.add(newPop.get(i));
-			if(Population.size()==newPopulation.size())
+			newPopulation.add(newPop.get(i2));
+			if (Population.size() == newPopulation.size())
 				break;
-			i+=2;
+
+			i2+=2;
 		}
 	}
 
